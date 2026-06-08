@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My School Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --orange:#FF6B1A;--gold:#FFD700;--navy:#0A1628;
+  --green:#2ECC71;--white:#F5F5F5;--glass:rgba(255,255,255,0.07);
+  --silver:#C0C0C0;--bronze:#CD7F32;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Outfit',sans-serif;background:var(--navy);color:var(--white);overflow-x:hidden;}
+
+/* ───────── LOCK SCREEN ───────── */
+#lockScreen{
+  position:fixed;inset:0;z-index:9999;
+  background:linear-gradient(160deg,#0A1628 0%,#1a2a4a 50%,#0d1f3c 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;
+}
+#lockScreen h1{
+  font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,6vw,4rem);
+  letter-spacing:4px;color:var(--orange);text-shadow:0 0 40px rgba(255,107,26,0.5);margin-bottom:4px;
+}
+#lockScreen p.sub{color:rgba(255,255,255,0.5);font-size:.9rem;margin-bottom:16px;letter-spacing:2px;text-align:center;}
+
+/* Shot-type selector */
+#shotSelector{display:flex;gap:12px;margin-bottom:14px;}
+.shot-btn{
+  padding:8px 22px;border-radius:50px;border:2px solid rgba(255,255,255,0.15);
+  background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.6);
+  font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:2px;
+  cursor:pointer;transition:all .25s;
+}
+.shot-btn.active{background:var(--orange);border-color:var(--orange);color:#fff;box-shadow:0 0 18px rgba(255,107,26,0.5);}
+.shot-btn:hover:not(.active){border-color:rgba(255,107,26,0.5);color:rgba(255,255,255,0.9);}
+
+#shotTypeLabel{
+  font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:3px;
+  color:var(--gold);text-align:center;margin-bottom:6px;min-height:1.4rem;
+}
+
+#gameContainer{
+  position:relative;width:min(720px,95vw);height:min(520px,72vh);
+  background:linear-gradient(180deg,#1a3a6e 0%,#0f2952 42%,#7a3d10 70%,#5a2c08 100%);
+  border-radius:16px;border:2px solid rgba(255,107,26,0.3);
+  overflow:hidden;cursor:crosshair;box-shadow:0 0 60px rgba(255,107,26,0.15);
+}
+/* Court floor lines */
+#gameContainer::before{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:30%;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,0.05) 0,rgba(255,255,255,0.05) 1px,transparent 1px,transparent 45px);
+}
+/* 3-point arc hint */
+#gameContainer::after{
+  content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  width:260px;height:130px;border:2px dashed rgba(255,255,255,0.12);
+  border-bottom:none;border-radius:130px 130px 0 0;pointer-events:none;
+}
+
+/* ── Hoop ── */
+#hoop{position:absolute;top:14%;left:50%;transform:translateX(-50%);width:130px;text-align:center;z-index:4;}
+#backboard{
+  width:140px;height:76px;background:rgba(255,255,255,0.1);
+  border:3px solid rgba(255,255,255,0.45);border-radius:4px;
+  margin:0 auto 4px;display:flex;align-items:center;justify-content:center;
+}
+#backboard::after{content:'';width:52px;height:32px;border:2px solid rgba(255,200,0,.7);border-radius:2px;}
+#hoopRim{
+  width:96px;height:12px;border:7px solid #FF4500;
+  border-radius:4px 4px 0 0;margin:0 auto;
+  box-shadow:0 0 16px rgba(255,69,0,.8);position:relative;z-index:3;
+}
+#hoopNet{
+  width:84px;margin:0 auto;height:50px;
+  background:repeating-linear-gradient(180deg,transparent,transparent 7px,rgba(255,255,255,.3) 7px,rgba(255,255,255,.3) 8px);
+  clip-path:polygon(5% 0%,95% 0%,80% 100%,20% 100%);
+  border:1px solid rgba(255,255,255,.15);
+}
+#pole{width:8px;height:90px;background:linear-gradient(90deg,#777,#ccc,#777);margin:0 auto;}
+
+/* ── Character (SVG) ── */
+#character{
+  position:absolute;bottom:28%;left:calc(50% + 60px);
+  width:64px;height:120px;z-index:6;
+  transform-origin:bottom center;
+  transition:transform .15s;
+}
+#character.shooting{animation:charShoot .5s ease forwards;}
+#character.dunking{animation:charDunk .6s ease forwards;}
+@keyframes charShoot{
+  0%{transform:scaleX(1);}
+  30%{transform:scaleX(1) translateY(-12px) rotate(-8deg);}
+  60%{transform:scaleX(1) translateY(-18px) rotate(-14deg);}
+  100%{transform:scaleX(1) translateY(0) rotate(0deg);}
+}
+@keyframes charDunk{
+  0%{transform:scaleX(1);}
+  20%{transform:scaleX(1) translateY(-30px);}
+  50%{transform:scaleX(1) translateY(-50px) rotate(-20deg);}
+  80%{transform:scaleX(1) translateY(-20px);}
+  100%{transform:scaleX(1) translateY(0);}
+}
+
+/* ── Ball ── */
+#ball{
+  position:absolute;width:42px;height:42px;
+  background:radial-gradient(circle at 35% 35%,#FF8C42,#E65C00,#8B2500);
+  border-radius:50%;bottom:30%;left:50%;transform:translateX(-50%);
+  cursor:grab;z-index:10;box-shadow:2px 4px 14px rgba(0,0,0,.6);
+  transition:box-shadow .2s;
+}
+#ball::before{
+  content:'';position:absolute;inset:0;border-radius:50%;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 42 42'%3E%3Ccircle cx='21' cy='21' r='19' fill='none' stroke='%23000' stroke-width='1.5' opacity='0.4'/%3E%3Cpath d='M2 21 Q11 9 21 21 Q31 33 40 21' fill='none' stroke='%23000' stroke-width='1.5' opacity='0.4'/%3E%3Cpath d='M2 21 Q11 33 21 21 Q31 9 40 21' fill='none' stroke='%23000' stroke-width='1.5' opacity='0.4'/%3E%3Cpath d='M21 2 Q9 11 21 21 Q33 31 21 40' fill='none' stroke='%23000' stroke-width='1.5' opacity='0.4'/%3E%3C/svg%3E") center/cover;
+}
+#ball.dragging{cursor:grabbing;box-shadow:0 0 28px rgba(255,140,0,.9);}
+#ball.flying{transition:none;cursor:default;}
+
+/* ── Game UI ── */
+#gameUI{
+  position:absolute;top:10px;left:0;right:0;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:0 14px;z-index:20;
+}
+.game-stat{
+  background:rgba(0,0,0,.5);border:1px solid rgba(255,107,26,.4);
+  border-radius:8px;padding:5px 13px;
+  font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:1px;
+}
+.game-stat span{color:var(--orange);}
+
+#aimLine{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5;}
+
+#helpHint{
+  position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  font-size:.75rem;color:rgba(255,255,255,.4);letter-spacing:1px;z-index:20;white-space:nowrap;
+}
+
+/* Score flash */
+.scoreFlash{
+  position:absolute;top:28%;left:50%;transform:translate(-50%,-50%);
+  font-family:'Bebas Neue',sans-serif;font-size:2.6rem;color:var(--gold);
+  text-shadow:0 0 20px rgba(255,215,0,.9);
+  animation:flashOut 1.3s ease-out forwards;pointer-events:none;z-index:50;
+}
+@keyframes flashOut{
+  0%{opacity:1;transform:translate(-50%,-50%) scale(1);}
+  60%{opacity:1;transform:translate(-50%,-120%) scale(1.35);}
+  100%{opacity:0;transform:translate(-50%,-190%) scale(1);}
+}
+
+/* Dunk overlay effect */
+.dunkFlash{
+  position:absolute;inset:0;background:rgba(255,107,26,.18);
+  animation:dunkFade .5s ease forwards;pointer-events:none;z-index:45;
+}
+@keyframes dunkFade{0%{opacity:1;}100%{opacity:0;}}
+
+/* Unlock overlay */
+#unlockOverlay{
+  position:absolute;inset:0;background:rgba(0,0,0,.88);
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  z-index:100;border-radius:16px;
+}
+#unlockOverlay h2{
+  font-family:'Bebas Neue',sans-serif;font-size:3rem;color:var(--gold);
+  text-shadow:0 0 30px rgba(255,215,0,.9);
+  animation:pulse .5s ease-in-out infinite alternate;
+}
+@keyframes pulse{from{transform:scale(1);}to{transform:scale(1.08);}}
+#unlockBtn{
+  margin-top:20px;padding:14px 40px;
+  background:linear-gradient(135deg,var(--orange),#ff9500);
+  color:#fff;border:none;font-family:'Bebas Neue',sans-serif;
+  font-size:1.5rem;letter-spacing:3px;border-radius:50px;cursor:pointer;
+  box-shadow:0 0 30px rgba(255,107,26,.6);transition:transform .2s;
+}
+#unlockBtn:hover{transform:scale(1.05);}
+
+/* ───────── PORTFOLIO ───────── */
+#portfolio{display:none;opacity:0;transition:opacity .8s;}
+#portfolio.visible{display:block;opacity:1;}
+
+nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(10,22,40,.92);backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(255,107,26,.2);
+  display:flex;align-items:center;justify-content:space-between;padding:14px 40px;
+}
+.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--orange);letter-spacing:3px;}
+.nav-links{display:flex;gap:28px;}
+.nav-links a{color:rgba(255,255,255,.6);text-decoration:none;font-size:.82rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;transition:color .3s;}
+.nav-links a:hover{color:var(--orange);}
+
+/* Hero */
+.hero{
+  min-height:90vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;
+  background:radial-gradient(ellipse 80% 60% at 50% 40%,rgba(255,107,26,.12),transparent),
+             linear-gradient(180deg,#0A1628 0%,#0d1f3c 100%);
+  padding:60px 20px;position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;opacity:.5;
+  background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23FF6B1A' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/svg%3E") repeat;
+}
+.hero-tag{
+  background:rgba(255,107,26,.15);border:1px solid rgba(255,107,26,.4);
+  color:var(--orange);border-radius:50px;padding:6px 18px;
+  font-size:.78rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;
+  margin-bottom:20px;animation:fadeUp .6s ease both;
+}
+.hero h1{
+  font-family:'Bebas Neue',sans-serif;font-size:clamp(3.5rem,10vw,8rem);line-height:.95;
+  background:linear-gradient(135deg,#fff 30%,var(--orange));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  animation:fadeUp .6s .1s ease both;
+}
+.hero p{margin-top:20px;max-width:580px;color:rgba(255,255,255,.55);font-size:1.05rem;line-height:1.7;animation:fadeUp .6s .2s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px);}to{opacity:1;transform:translateY(0);}}
+.hero-badges{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:28px;animation:fadeUp .6s .3s ease both;}
+.badge{background:var(--glass);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 18px;font-size:.88rem;backdrop-filter:blur(10px);}
+.badge span{color:var(--orange);margin-right:5px;}
+
+/* Sections */
+section{padding:90px 40px;max-width:1200px;margin:0 auto;}
+.section-label{font-size:.72rem;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--orange);margin-bottom:8px;}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.5rem,6vw,5rem);line-height:1;background:linear-gradient(135deg,#fff,rgba(255,255,255,.55));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:44px;}
+.divider{width:100%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,107,26,.3),transparent);}
+
+/* ── Medal Cards ── */
+.medals-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:28px;}
+.medal-card{
+  border-radius:20px;padding:34px 28px;position:relative;overflow:hidden;
+  transition:transform .3s,box-shadow .3s;
+  display:flex;flex-direction:column;align-items:flex-start;
+}
+.medal-card:hover{transform:translateY(-8px);box-shadow:0 28px 56px rgba(0,0,0,.4);}
+.medal-card.gold{background:linear-gradient(135deg,rgba(255,215,0,.12),rgba(255,180,0,.04));border:1.5px solid rgba(255,215,0,.45);}
+.medal-card.silver{background:linear-gradient(135deg,rgba(192,192,192,.1),rgba(180,180,180,.03));border:1.5px solid rgba(192,192,192,.35);}
+.medal-card.bronze{background:linear-gradient(135deg,rgba(205,127,50,.1),rgba(180,110,40,.03));border:1.5px solid rgba(205,127,50,.35);}
+.medal-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  border-radius:20px 20px 0 0;
+}
+.medal-card.gold::before{background:linear-gradient(90deg,#FFD700,#FFF176,#FFD700);}
+.medal-card.silver::before{background:linear-gradient(90deg,#C0C0C0,#E8E8E8,#C0C0C0);}
+.medal-card.bronze::before{background:linear-gradient(90deg,#CD7F32,#E8A870,#CD7F32);}
+
+.medal-icon{font-size:3.5rem;margin-bottom:10px;filter:drop-shadow(0 4px 12px rgba(0,0,0,.4));}
+.medal-rank{
+  font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:3px;
+  padding:4px 14px;border-radius:50px;margin-bottom:14px;
+}
+.gold .medal-rank{background:rgba(255,215,0,.15);color:#FFD700;border:1px solid rgba(255,215,0,.4);}
+.silver .medal-rank{background:rgba(192,192,192,.12);color:#C0C0C0;border:1px solid rgba(192,192,192,.35);}
+.bronze .medal-rank{background:rgba(205,127,50,.12);color:#CD7F32;border:1px solid rgba(205,127,50,.35);}
+.medal-card h3{font-size:1.25rem;font-weight:800;margin-bottom:6px;line-height:1.2;}
+.medal-card .event{font-size:.82rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;opacity:.6;}
+.medal-card p{color:rgba(255,255,255,.55);font-size:.88rem;line-height:1.65;flex:1;}
+.medal-glow{
+  position:absolute;bottom:-30px;right:-30px;width:120px;height:120px;border-radius:50%;
+  opacity:.12;filter:blur(30px);
+}
+.gold .medal-glow{background:#FFD700;}
+.silver .medal-glow{background:#C0C0C0;}
+.bronze .medal-glow{background:#CD7F32;}
+
+/* ── Citizen Cards ── */
+.citizen-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px;}
+.citizen-card{
+  background:linear-gradient(135deg,rgba(46,204,113,.08),rgba(0,0,0,0));
+  border:1px solid rgba(46,204,113,.15);border-radius:16px;padding:28px;
+  transition:transform .3s,box-shadow .3s;
+}
+.citizen-card:hover{transform:translateY(-5px);box-shadow:0 20px 40px rgba(0,0,0,.3);}
+.citizen-card .icon{font-size:2rem;margin-bottom:12px;}
+.citizen-card h3{font-size:1.1rem;font-weight:700;color:var(--green);margin-bottom:8px;}
+.citizen-card p{color:rgba(255,255,255,.55);font-size:.88rem;line-height:1.6;}
+.tag-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}
+.tag{background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.25);color:var(--green);border-radius:50px;padding:3px 10px;font-size:.75rem;}
+.gold-citizen{
+  background:linear-gradient(135deg,rgba(255,215,0,.1),rgba(0,0,0,0));
+  border:1.5px solid rgba(255,215,0,.35);
+}
+.gold-citizen h3{color:var(--gold);}
+.gold-citizen .tag{background:rgba(255,215,0,.1);border-color:rgba(255,215,0,.3);color:var(--gold);}
+
+/* ── TIC TAC TOE ── */
+.ttt-wrap{display:flex;flex-direction:column;align-items:center;gap:24px;}
+.ttt-players{display:flex;align-items:center;gap:36px;flex-wrap:wrap;justify-content:center;}
+.player-card{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:14px 26px;border-radius:16px;border:2px solid transparent;transition:all .3s;
+}
+.player-card.active-player{
+  border-color:var(--gold);box-shadow:0 0 20px rgba(255,215,0,.25);
+  background:rgba(255,215,0,.06);
+}
+.player-avatar{
+  width:76px;height:76px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:2.6rem;border:3px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.05);
+}
+.player-name{font-weight:700;font-size:.95rem;letter-spacing:.5px;}
+.player-symbol{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;}
+.p1-sym{color:#58C4DC;}.p2-sym{color:#FFD700;}
+.ai-badge{
+  font-size:.7rem;font-weight:700;letter-spacing:2px;
+  background:rgba(255,107,26,.2);border:1px solid rgba(255,107,26,.4);
+  color:var(--orange);border-radius:50px;padding:2px 10px;margin-top:2px;
+}
+.ttt-turn-label{font-size:.95rem;color:rgba(255,255,255,.5);letter-spacing:1px;font-weight:600;text-align:center;}
+.ttt-turn-label span{color:var(--gold);font-weight:700;}
+.ttt-board{display:grid;grid-template-columns:repeat(3,96px);gap:8px;}
+.ttt-cell{
+  width:96px;height:96px;background:rgba(255,255,255,.04);
+  border:2px solid rgba(255,255,255,.1);border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:2.2rem;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;
+}
+.ttt-cell:hover:not(.taken){background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.25);transform:scale(1.05);}
+.ttt-cell.taken{cursor:default;}
+.ttt-cell.win-cell{background:rgba(255,215,0,.12);border-color:var(--gold);box-shadow:0 0 20px rgba(255,215,0,.25);animation:winPop .4s ease;}
+@keyframes winPop{0%{transform:scale(1);}50%{transform:scale(1.16);}100%{transform:scale(1);}}
+.ttt-cell .mark{animation:markDrop .25s ease;}
+@keyframes markDrop{from{transform:scale(0) rotate(20deg);opacity:0;}to{transform:scale(1) rotate(0);opacity:1;}}
+.ttt-status{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:2px;color:var(--gold);text-align:center;min-height:2.5rem;}
+.ai-thinking{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:2px;color:rgba(255,107,26,.7);animation:blink .7s infinite alternate;}
+@keyframes blink{from{opacity:.4;}to{opacity:1;}}
+.score-board{display:flex;gap:28px;align-items:center;}
+.score-item{text-align:center;}
+.score-item .s-name{font-size:.72rem;color:rgba(255,255,255,.4);letter-spacing:1px;}
+.score-item .s-num{font-family:'Bebas Neue',sans-serif;font-size:2.1rem;color:var(--white);}
+.score-sep{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:rgba(255,255,255,.2);}
+.ttt-btn{
+  padding:11px 34px;background:linear-gradient(135deg,var(--orange),#ff9500);
+  color:#fff;border:none;font-family:'Bebas Neue',sans-serif;
+  font-size:1.2rem;letter-spacing:2px;border-radius:50px;cursor:pointer;
+  box-shadow:0 4px 20px rgba(255,107,26,.4);transition:transform .2s,box-shadow .2s;
+}
+.ttt-btn:hover{transform:scale(1.05);box-shadow:0 8px 30px rgba(255,107,26,.5);}
+
+/* Confetti */
+.confetti-piece{position:fixed;top:-10px;width:10px;height:14px;border-radius:2px;animation:confettiFall 2.5s ease forwards;pointer-events:none;z-index:9998;}
+@keyframes confettiFall{0%{transform:translateY(0) rotate(0deg);opacity:1;}100%{transform:translateY(110vh) rotate(720deg);opacity:0;}}
+
+footer{text-align:center;padding:40px;color:rgba(255,255,255,.25);font-size:.82rem;border-top:1px solid rgba(255,255,255,.05);}
+
+@media(max-width:520px){
+  section{padding:60px 20px;}
+  .ttt-board{grid-template-columns:repeat(3,80px);}
+  .ttt-cell{width:80px;height:80px;font-size:1.8rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     LOCK SCREEN — BASKETBALL MINI GAME
+═══════════════════════════════════════════ -->
+<div id="lockScreen">
+  <h1>🏀 PORTFOLIO LOCKED</h1>
+  <p class="sub">SCORE 3 BASKETS TO UNLOCK — CHOOSE YOUR SHOT!</p>
+
+  <!-- Shot-type selector -->
+  <div id="shotSelector">
+    <button class="shot-btn active" id="btn3pt" onclick="setShotType('3pt')">🎯 THREE POINTER</button>
+    <button class="shot-btn" id="btnDunk" onclick="setShotType('dunk')">⚡ DUNK</button>
+  </div>
+  <div id="shotTypeLabel">LONG RANGE 3-POINTER MODE</div>
+
+  <div id="gameContainer">
+    <svg id="aimLine"></svg>
+
+    <!-- HUD -->
+    <div id="gameUI">
+      <div class="game-stat">SCORE <span id="scoreDisplay">0</span></div>
+      <div class="game-stat">SHOTS <span id="shotsDisplay">0</span></div>
+      <div class="game-stat">GOAL <span>3</span></div>
+    </div>
+
+    <!-- Hoop assembly -->
+    <div id="hoop">
+      <div id="backboard"></div>
+      <div id="hoopRim"></div>
+      <div id="hoopNet"></div>
+      <div id="pole"></div>
+    </div>
+
+    <!-- SVG Character -->
+    <svg id="character" viewBox="0 0 64 120" xmlns="http://www.w3.org/2000/svg">
+      <!-- Shadow -->
+      <ellipse cx="32" cy="118" rx="18" ry="4" fill="rgba(0,0,0,0.3)"/>
+      <!-- Shoes -->
+      <rect x="14" y="105" width="16" height="10" rx="5" fill="#E63946"/>
+      <rect x="34" y="105" width="16" height="10" rx="5" fill="#E63946"/>
+      <!-- Socks -->
+      <rect x="17" y="99" width="10" height="9" rx="2" fill="#fff"/>
+      <rect x="37" y="99" width="10" height="9" rx="2" fill="#fff"/>
+      <!-- Shorts -->
+      <path d="M14 78 L14 100 L32 100 L32 78Z" fill="#1D3557"/>
+      <path d="M32 78 L32 100 L50 100 L50 78Z" fill="#1D3557"/>
+      <!-- Jersey body -->
+      <rect x="12" y="50" width="40" height="32" rx="4" fill="#E63946"/>
+      <!-- Jersey number -->
+      <text x="32" y="72" text-anchor="middle" font-family="'Bebas Neue',sans-serif" font-size="14" fill="white" opacity="0.9">23</text>
+      <!-- Arms -->
+      <rect id="armL" x="2" y="52" width="12" height="28" rx="6" fill="#F4A261"/>
+      <rect id="armR" x="50" y="52" width="12" height="28" rx="6" fill="#F4A261"/>
+      <!-- Neck -->
+      <rect x="27" y="42" width="10" height="12" rx="3" fill="#F4A261"/>
+      <!-- Head -->
+      <ellipse cx="32" cy="34" rx="16" ry="18" fill="#F4A261"/>
+      <!-- Hair -->
+      <ellipse cx="32" cy="18" rx="16" ry="8" fill="#1a1a1a"/>
+      <rect x="16" y="18" width="32" height="6" fill="#1a1a1a"/>
+      <!-- Eyes -->
+      <ellipse cx="25" cy="33" rx="3.5" ry="3.5" fill="white"/>
+      <ellipse cx="39" cy="33" rx="3.5" ry="3.5" fill="white"/>
+      <ellipse cx="26" cy="33" rx="2" ry="2" fill="#222"/>
+      <ellipse cx="40" cy="33" rx="2" ry="2" fill="#222"/>
+      <!-- Smile -->
+      <path d="M26 40 Q32 46 38 40" fill="none" stroke="#c0684a" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- Sweatband -->
+      <rect x="16" y="22" width="32" height="5" rx="2.5" fill="#E63946" opacity="0.85"/>
+      <!-- Legs upper -->
+      <rect x="16" y="78" width="12" height="24" rx="4" fill="#F4A261"/>
+      <rect x="36" y="78" width="12" height="24" rx="4" fill="#F4A261"/>
+    </svg>
+
+    <!-- Ball -->
+    <div id="ball"></div>
+
+    <div id="helpHint">🖱️ DRAG THE BALL & RELEASE TO SHOOT</div>
+
+    <!-- Unlock overlay -->
+    <div id="unlockOverlay">
+      <div style="font-size:4rem;margin-bottom:10px;">🏆</div>
+      <h2>PORTFOLIO UNLOCKED!</h2>
+      <p style="color:rgba(255,255,255,.5);margin-top:8px;">Champion moves. Now meet the scholar.</p>
+      <button id="unlockBtn" onclick="enterPortfolio()">ENTER PORTFOLIO →</button>
+    </div>
+  </div>
+
+  <p style="margin-top:14px;color:rgba(255,255,255,.28);font-size:.78rem;letter-spacing:1px;">3-POINTER: DRAG FROM FAR AWAY • DUNK: DRAG CLOSE TO HOOP</p>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MAIN PORTFOLIO
+═══════════════════════════════════════════ -->
+<div id="portfolio">
+  <nav>
+    <div class="nav-logo">🎓 MY PORTFOLIO</div>
+    <div class="nav-links">
+      <a href="#academic">Awards</a>
+      <a href="#citizen">Citizen</a>
+      <a href="#tictactoe">Mini Game</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-tag">🎓 School Portfolio 2025</div>
+    <h1>DRIVEN.<br>CURIOUS.<br>ENGAGED.</h1>
+    <p>A student who combines STEM excellence, athletic achievement, and active community involvement — proving that champions perform on every court.</p>
+    <div class="hero-badges">
+      <div class="badge"><span>🥇</span>STEM Olympiad</div>
+      <div class="badge"><span>🏃</span>100m Sprint</div>
+      <div class="badge"><span>💡</span>ElecWalk</div>
+      <div class="badge"><span>🏀</span>Baller</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ─── SECTION 1: ACADEMIC ACHIEVER ─── -->
+  <section id="academic">
+    <div class="section-label">Section 01</div>
+    <div class="section-title">STEM<br>ACHIEVEMENTS</div>
+    <div class="medals-grid">
+
+      <!-- GOLD -->
+      <div class="medal-card gold">
+        <div class="medal-glow"></div>
+        <div class="medal-icon">🥇</div>
+        <div class="medal-rank">GOLD MEDAL</div>
+        <h3>ElecWalk Project</h3>
+        <div class="event">STEM Olympiad — Technology & Innovation</div>
+        <p>Designed and built <strong>ElecWalk</strong> — a piezoelectric energy-harvesting walkway that converts footstep pressure into usable electrical power. Awarded Gold for outstanding engineering design, innovation, and real-world impact potential at the regional STEM Olympiad.</p>
+      </div>
+
+      <!-- SILVER -->
+      <div class="medal-card silver">
+        <div class="medal-glow"></div>
+        <div class="medal-icon">🥈</div>
+        <div class="medal-rank">SILVER MEDAL</div>
+        <h3>Technology STEM Olympiad</h3>
+        <div class="event">Regional Technology Category</div>
+        <p>Competed in the Technology division of the STEM Olympiad, presenting advanced solutions in hardware integration and systems design. Earned Silver for a high-performing prototype that impressed the judging panel with its practicality and technical depth.</p>
+      </div>
+
+      <!-- BRONZE -->
+      <div class="medal-card bronze">
+        <div class="medal-glow"></div>
+        <div class="medal-icon">🥉</div>
+        <div class="medal-rank">BRONZE MEDAL</div>
+        <h3>Mathematics STEM Olympiad</h3>
+        <div class="event">Regional Mathematics Category</div>
+        <p>Demonstrated exceptional problem-solving skills in the Mathematics category — tackling multi-step competition problems in algebra, combinatorics, and number theory. Secured Bronze in a competitive field of top students from across the region.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ─── SECTION 2: ACTIVE & RESPONSIBLE CITIZEN ─── -->
+  <section id="citizen">
+    <div class="section-label">Section 02</div>
+    <div class="section-title">ACTIVE &<br>RESPONSIBLE CITIZEN</div>
+    <div class="citizen-grid">
+
+        <div class="citizen-card gold-citizen">
+          <div class="icon">🥇</div>
+          <h3>Gold — 100m Sprint Champion</h3>
+          <p>Claimed the Gold Medal in the 100-metre sprint at the inter-school athletics meet. Trained rigorously, demonstrating discipline, resilience, and competitive spirit both on the track and as a team motivator.</p>
+          <div class="tag-list">
+            <span class="tag">Athletics</span>
+            <span class="tag">Discipline</span>
+            <span class="tag">Leadership</span>
+          </div>
+        </div>
+
+      <div class="citizen-card">
+        <div class="icon">🌱</div>
+        <h3>Environmental Club</h3>
+        <p>Led the school recycling drive, cutting campus waste by 40%. Organised tree-planting events with 100+ participants and raised awareness of climate responsibility schoolwide.</p>
+        <div class="tag-list">
+          <span class="tag">Sustainability</span>
+          <span class="tag">Initiative</span>
+        </div>
+      </div>
+
+      <div class="citizen-card">
+        <div class="icon">🤝</div>
+        <h3>Community Volunteering</h3>
+        <p>Logged 120+ volunteer hours at shelters and food banks. Organised fundraisers collecting over ₱15,000 for displaced families, proving that service is not a requirement but a calling.</p>
+        <div class="tag-list">
+          <span class="tag">Empathy</span>
+          <span class="tag">Service</span>
+        </div>
+      </div>
+
+      <div class="citizen-card">
+        <div class="icon">📣</div>
+        <h3>Student Government</h3>
+        <p>Elected Class Representative. Advocated for mental health resources and spearheaded the school's first Student Wellness Week, reaching 400+ students.</p>
+        <div class="tag-list">
+          <span class="tag">Advocacy</span>
+          <span class="tag">Teamwork</span>
+        </div>
+      </div>
+
+      <div class="citizen-card">
+        <div class="icon">📚</div>
+        <h3>Peer Tutoring Program</h3>
+        <p>Tutored 15 classmates weekly in Math and Science. Helped raise the class average by a full letter grade and fostered a culture of mutual learning and support.</p>
+        <div class="tag-list">
+          <span class="tag">Mentorship</span>
+          <span class="tag">Education</span>
+        </div>
+      </div>
+
+      <div class="citizen-card">
+        <div class="icon">🛡️</div>
+        <h3>Anti-Bullying Ambassador</h3>
+        <p>Trained to mediate conflicts and run school-wide campaigns that shifted campus culture toward respect and inclusion. Reached 300+ students through assemblies and workshops.</p>
+        <div class="tag-list">
+          <span class="tag">Integrity</span>
+          <span class="tag">Courage</span>
+        </div>
+      </div>
+
+
+      <div class="citizen-card">
+        <div class="icon">📚</div>
+        <h3>Peer Tutoring Program</h3>
+        <p>Tutored 15 classmates weekly in Math and Science. Helped raise the class average by a full letter grade and fostered a culture of mutual learning and support.</p>
+        <div class="tag-list">
+          <span class="tag">Mentorship</span>
+          <span class="tag">Education</span>
+        </div>
+      </div>
+
+
+      
+      <div class="citizen-card">
+        <div class="icon">📚</div>
+        <h3>Peer Tutoring Program</h3>
+        <p>Tutored 15 classmates weekly in Math and Science. Helped raise the class average by a full letter grade and fostered a culture of mutual learning and support.</p>
+        <div class="tag-list">
+          <span class="tag">Mentorship</span>
+          <span class="tag">Education</span>
+        </div>
+      </div>
+
+
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ─── SECTION 3: TIC TAC TOE vs AI ─── -->
+  <section id="tictactoe" style="text-align:center;">
+    <div class="section-label" style="text-align:center;">Section 03 — Mini Game</div>
+    <div class="section-title" style="text-align:center;">YOU (RONALDO)<br>vs AI (LEBRON)</div>
+    <p style="color:rgba(255,255,255,.5);margin-bottom:40px;max-width:500px;margin-left:auto;margin-right:auto;">You play as Cristiano Ronaldo (❌). The AI controls LeBron James (⭕). Can you beat the King?</p>
+
+    <div class="ttt-wrap">
+      <div class="ttt-players">
+        <div class="player-card" id="pc1">
+          <div class="player-avatar">🐐</div>
+          <div class="player-name">CRISTIANO RONALDO</div>
+          <div class="player-symbol p1-sym">❌ — YOU</div>
+        </div>
+
+        <div class="score-board">
+          <div class="score-item"><div class="s-name">CR7</div><div class="s-num" id="s1">0</div></div>
+          <div class="score-sep">—</div>
+          <div class="score-item"><div class="s-name">DRAWS</div><div class="s-num" id="sd">0</div></div>
+          <div class="score-sep">—</div>
+          <div class="score-item"><div class="s-name">BRON</div><div class="s-num" id="s2">0</div></div>
+        </div>
+
+        <div class="player-card" id="pc2">
+          <div class="player-avatar">👑</div>
+          <div class="player-name">LEBRON JAMES</div>
+          <div class="player-symbol p2-sym">⭕ — AI</div>
+          <div class="ai-badge">🤖 AI</div>
+        </div>
+      </div>
+
+      <div class="ttt-turn-label" id="turnLabel">YOUR TURN — PICK A SQUARE (<span>❌</span>)</div>
+      <div class="ttt-board" id="tttBoard"></div>
+      <div class="ttt-status" id="tttStatus"></div>
+      <button class="ttt-btn" onclick="resetTTT()">🔄 NEW GAME</button>
+    </div>
+  </section>
+
+  <footer>
+    <p>🎓 School Portfolio 2025 — Driven by passion, purpose & a perfect arc</p>
+  </footer>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  BASKETBALL GAME
+// ══════════════════════════════════════════════
+const container  = document.getElementById('gameContainer');
+const ball       = document.getElementById('ball');
+const hoopRim   = document.getElementById('hoopRim');
+const scoreDisp = document.getElementById('scoreDisplay');
+const shotsDisp = document.getElementById('shotsDisplay');
+const aimSVG    = document.getElementById('aimLine');
+const charEl    = document.getElementById('character');
+const unlockOv  = document.getElementById('unlockOverlay');
+const shotLabel = document.getElementById('shotTypeLabel');
+
+const GOAL = 3;
+let score = 0, shots = 0;
+let gameActive = true;
+let isDragging = false;
+let dragStart = {x:0,y:0};
+let ballPos   = {x:0,y:0};
+let shotType  = '3pt'; // '3pt' | 'dunk'
+
+function setShotType(t) {
+  shotType = t;
+  document.getElementById('btn3pt').classList.toggle('active', t==='3pt');
+  document.getElementById('btnDunk').classList.toggle('active', t==='dunk');
+  shotLabel.textContent = t==='3pt' ? 'LONG RANGE 3-POINTER MODE' : '⚡ DUNK MODE — GET CLOSE!';
+  // Reposition ball for dunk
+  if (t==='dunk') {
+    ball.style.left   = '62%';
+    ball.style.bottom = '28%';
+    ball.style.transform = 'translateX(-50%)';
+  } else {
+    ball.style.left   = '50%';
+    ball.style.bottom = '30%';
+    ball.style.transform = 'translateX(-50%)';
+  }
+}
+
+function getRect(el) { return el.getBoundingClientRect(); }
+function getCenter(el) {
+  const r=getRect(el), cr=getRect(container);
+  return {x:r.left-cr.left+r.width/2, y:r.top-cr.top+r.height/2};
+}
+
+function resetBall() {
+  ball.style.transition='left .4s ease,bottom .4s ease,top .4s ease';
+  if (shotType==='dunk') {
+    ball.style.left='62%'; ball.style.bottom='28%';
+  } else {
+    ball.style.left='50%'; ball.style.bottom='30%';
+  }
+  ball.style.top='';
+  ball.style.transform='translateX(-50%)';
+  ball.classList.remove('flying');
+  aimSVG.innerHTML='';
+}
+
+function drawGuide(sx,sy,ex,ey) {
+  aimSVG.innerHTML='';
+  const dx=ex-sx, dy=ey-sy;
+  const vx=-dx*0.08, vy=-dy*0.08;
+  const g=0.28;
+  const steps=14;
+  for(let i=0;i<steps;i++){
+    const t=i*4;
+    const px=sx+vx*t;
+    const py=sy+vy*t+.5*g*t*t;
+    const alpha=.55*(1-i/steps);
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('cx',px); c.setAttribute('cy',py);
+    c.setAttribute('r',4-i*.22);
+    c.setAttribute('fill',`rgba(255,210,0,${alpha})`);
+    aimSVG.appendChild(c);
+  }
+}
+
+// Drag start
+ball.addEventListener('mousedown', e=>{
+  if(!gameActive) return;
+  isDragging=true;
+  const cr=getRect(container);
+  dragStart={x:e.clientX-cr.left, y:e.clientY-cr.top};
+  ballPos=getCenter(ball);
+  ball.classList.add('dragging');
+  ball.style.transition='none';
+  e.preventDefault();
+});
+document.addEventListener('mousemove', e=>{
+  if(!isDragging) return;
+  const cr=getRect(container);
+  drawGuide(ballPos.x,ballPos.y,e.clientX-cr.left,e.clientY-cr.top);
+});
+document.addEventListener('mouseup', e=>{
+  if(!isDragging) return;
+  isDragging=false;
+  ball.classList.remove('dragging');
+  const cr=getRect(container);
+  aimSVG.innerHTML='';
+  shootBall(e.clientX-cr.left-dragStart.x, e.clientY-cr.top-dragStart.y);
+});
+ball.addEventListener('touchstart',e=>{
+  if(!gameActive) return;
+  isDragging=true;
+  const t=e.touches[0], cr=getRect(container);
+  dragStart={x:t.clientX-cr.left,y:t.clientY-cr.top};
+  ballPos=getCenter(ball);
+  ball.classList.add('dragging');
+  ball.style.transition='none';
+  e.preventDefault();
+},{passive:false});
+document.addEventListener('touchmove',e=>{
+  if(!isDragging) return;
+  const t=e.touches[0],cr=getRect(container);
+  drawGuide(ballPos.x,ballPos.y,t.clientX-cr.left,t.clientY-cr.top);
+},{passive:true});
+document.addEventListener('touchend',e=>{
+  if(!isDragging) return;
+  isDragging=false;
+  ball.classList.remove('dragging');
+  const t=e.changedTouches[0],cr=getRect(container);
+  aimSVG.innerHTML='';
+  shootBall(t.clientX-cr.left-dragStart.x,t.clientY-cr.top-dragStart.y);
+});
+
+function shootBall(dx,dy) {
+  shots++; shotsDisp.textContent=shots;
+  ball.classList.add('flying');
+  ball.style.transition='none';
+
+  // Animate character
+  charEl.classList.remove('shooting','dunking');
+  void charEl.offsetWidth;
+  charEl.classList.add(shotType==='dunk' ? 'dunking' : 'shooting');
+  setTimeout(()=>charEl.classList.remove('shooting','dunking'),700);
+
+  const start = getCenter(ball);
+  let vx, vy, gravity;
+
+  if(shotType==='dunk'){
+    // Dunk: fast upward arc toward hoop, more direct
+    const hoopC=getCenter(hoopRim);
+    const distX=hoopC.x-start.x, distY=hoopC.y-start.y;
+    gravity=0.35;
+    const frames=28;
+    vx=distX/frames;
+    vy=(distY-.5*gravity*frames*frames)/frames;
+  } else {
+    // 3-pointer: standard drag physics
+    gravity=0.22;
+    vx=-dx*0.048;
+    vy=-dy*0.048;
+  }
+
+  const cr=getRect(container);
+  let px=start.x, py=start.y;
+  let cvx=vx, cvy=vy;
+  let frame=0, scored=false;
+  const hoopC=getCenter(hoopRim);
+  const hoopW=getRect(hoopRim).width;
+
+  function animate(){
+    frame++;
+    if(shotType!=='dunk') cvx*=0.996;
+    cvy+=gravity;
+    px+=cvx; py+=cvy;
+
+    ball.style.left=(px-21)+'px';
+    ball.style.top=(py-21)+'px';
+    ball.style.bottom=''; ball.style.transform='';
+
+    // Floor bounce
+    if(py>cr.height-28){
+      cvy*=-0.45; cvx*=0.6; py=cr.height-28;
+      if(Math.abs(cvy)<2){resetBall();return;}
+    }
+
+    const dist=Math.sqrt((px-hoopC.x)**2+(py-hoopC.y)**2);
+    const inWindow=py<hoopC.y+32&&py>hoopC.y-14&&cvy>0;
+
+    if(!scored && dist<hoopW*0.42 && inWindow){
+      scored=true;
+      score++; scoreDisp.textContent=score;
+
+      if(shotType==='dunk'){
+        showFlash('⚡ DUNK! +2', '#FF6B1A');
+        const df=document.createElement('div'); df.className='dunkFlash';
+        container.appendChild(df); setTimeout(()=>df.remove(),600);
+        launchConfetti(8);
+      } else {
+        showFlash('🔥 SWISH! +3', '#FFD700');
+        launchConfetti(6);
+      }
+
+      if(score>=GOAL){
+        setTimeout(()=>{unlockOv.style.display='flex';gameActive=false;},900);
+        return;
+      }
+      setTimeout(resetBall,700);
+      return;
+    }
+
+    if(px<-60||px>cr.width+60||py>cr.height+60){resetBall();return;}
+    if(frame>340){resetBall();return;}
+    requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
+}
+
+function showFlash(msg,color='#FFD700'){
+  const el=document.createElement('div');
+  el.className='scoreFlash'; el.textContent=msg;
+  el.style.color=color; el.style.textShadow=`0 0 20px ${color}`;
+  container.appendChild(el);
+  setTimeout(()=>el.remove(),1400);
+}
+
+function launchConfetti(n){
+  const cols=['#FF6B1A','#FFD700','#2ECC71','#58C4DC','#FF4081'];
+  for(let i=0;i<n;i++){
+    const c=document.createElement('div'); c.className='confetti-piece';
+    c.style.left=Math.random()*100+'vw';
+    c.style.background=cols[Math.floor(Math.random()*cols.length)];
+    c.style.animationDuration=(1.5+Math.random())+'s';
+    c.style.animationDelay=(Math.random()*.3)+'s';
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),3000);
+  }
+}
+
+function enterPortfolio(){
+  const ls=document.getElementById('lockScreen');
+  ls.style.transition='opacity .8s'; ls.style.opacity='0';
+  setTimeout(()=>{
+    ls.style.display='none';
+    const p=document.getElementById('portfolio');
+    p.style.display='block';
+    setTimeout(()=>p.classList.add('visible'),50);
+  },800);
+  launchConfetti(50);
+}
+
+// ══════════════════════════════════════════════
+//  TIC TAC TOE — Player (X) vs AI (O)
+// ══════════════════════════════════════════════
+let tttBoard  = Array(9).fill(null);
+let tttOver   = false;
+let aiThinking= false;
+let tttScores = [0,0,0]; // [player,ai,draws]
+const WINS = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+
+function buildBoard(){
+  const el=document.getElementById('tttBoard'); el.innerHTML='';
+  tttBoard.forEach((v,i)=>{
+    const c=document.createElement('div');
+    c.className='ttt-cell'+(v!==null?' taken':'');
+    if(v!==null){
+      const m=document.createElement('span'); m.className='mark';
+      m.textContent=v===0?'❌':'⭕'; c.appendChild(m);
+    }
+    c.onclick=()=>playerMove(i);
+    el.appendChild(c);
+  });
+}
+
+function highlightWin(combo){
+  const cells=document.querySelectorAll('.ttt-cell');
+  combo.forEach(i=>cells[i].classList.add('win-cell'));
+}
+
+function checkWin(board,p){
+  return WINS.find(([a,b,c])=>board[a]===p&&board[b]===p&&board[c]===p)||null;
+}
+
+/* Minimax AI */
+function minimax(board,depth,isMax){
+  if(checkWin(board,1)) return 10-depth;
+  if(checkWin(board,0)) return depth-10;
+  if(board.every(v=>v!==null)) return 0;
+  if(isMax){
+    let best=-Infinity;
+    board.forEach((_,i)=>{
+      if(board[i]===null){
+        board[i]=1; best=Math.max(best,minimax(board,depth+1,false)); board[i]=null;
+      }
+    });
+    return best;
+  } else {
+    let best=Infinity;
+    board.forEach((_,i)=>{
+      if(board[i]===null){
+        board[i]=0; best=Math.min(best,minimax(board,depth+1,true)); board[i]=null;
+      }
+    });
+    return best;
+  }
+}
+
+function getBestMove(board){
+  let best=-Infinity, move=-1;
+  board.forEach((_,i)=>{
+    if(board[i]===null){
+      board[i]=1;
+      const val=minimax(board,0,false);
+      board[i]=null;
+      if(val>best){best=val;move=i;}
+    }
+  });
+  return move;
+}
+
+function endGame(winner){
+  tttOver=true;
+  const st=document.getElementById('tttStatus');
+  const tl=document.getElementById('turnLabel');
+  if(winner==='player'){
+    tttScores[0]++; document.getElementById('s1').textContent=tttScores[0];
+    st.textContent='🏆 RONALDO WINS! SIUUU!'; launchConfetti(25);
+  } else if(winner==='ai'){
+    tttScores[1]++; document.getElementById('s2').textContent=tttScores[1];
+    st.textContent='👑 LEBRON WINS! GG!';
+  } else {
+    tttScores[2]++; document.getElementById('sd').textContent=tttScores[2];
+    st.textContent="🤝 IT'S A DRAW!";
+  }
+  tl.textContent='';
+  document.getElementById('pc1').classList.remove('active-player');
+  document.getElementById('pc2').classList.remove('active-player');
+}
+
+function playerMove(i){
+  if(tttOver||tttBoard[i]!==null||aiThinking) return;
+  tttBoard[i]=0;
+  buildBoard();
+  const win=checkWin(tttBoard,0);
+  if(win){highlightWin(win);endGame('player');return;}
+  if(tttBoard.every(v=>v!==null)){endGame('draw');return;}
+
+  // AI turn
+  aiThinking=true;
+  document.getElementById('pc1').classList.remove('active-player');
+  document.getElementById('pc2').classList.add('active-player');
+  document.getElementById('turnLabel').innerHTML='<span class="ai-thinking">👑 LEBRON IS THINKING...</span>';
+
+  setTimeout(()=>{
+    const aiMove=getBestMove(tttBoard);
+    tttBoard[aiMove]=1;
+    buildBoard();
+    const aiWin=checkWin(tttBoard,1);
+    if(aiWin){highlightWin(aiWin);endGame('ai');aiThinking=false;return;}
+    if(tttBoard.every(v=>v!==null)){endGame('draw');aiThinking=false;return;}
+
+    aiThinking=false;
+    document.getElementById('pc2').classList.remove('active-player');
+    document.getElementById('pc1').classList.add('active-player');
+    document.getElementById('turnLabel').innerHTML='YOUR TURN — PICK A SQUARE (<span>❌</span>)';
+  },650);
+}
+
+function resetTTT(){
+  tttBoard=Array(9).fill(null);
+  tttOver=false; aiThinking=false;
+  document.getElementById('tttStatus').textContent='';
+  document.getElementById('pc1').classList.add('active-player');
+  document.getElementById('pc2').classList.remove('active-player');
+  document.getElementById('turnLabel').innerHTML='YOUR TURN — PICK A SQUARE (<span>❌</span>)';
+  buildBoard();
+}
+
+// Init
+buildBoard();
+document.getElementById('pc1').classList.add('active-player');
+resetBall();
+</script>
+</body>
+</html>
